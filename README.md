@@ -7,7 +7,7 @@ This repository contains a `docker-compose.yaml` which allows users to instantia
   - [`stack`](#stack)
   - [`console`](#console)
 - [License](#license)
-- 
+
 # Usage
 
 ## `stack`
