@@ -1,0 +1,23 @@
+{
+  "author": "Cloud Harvest, Fiona June Leathers",
+  "classifiers": [
+    "Programming Language :: Bash :: 5.2",
+    "License :: OSI Approved :: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+    "Operating System :: OS Independent"
+  ],
+  "description": "This is the Command Line Interface for CloudHarvest.",
+  "install_requires": [
+    "bash",
+    "docker"
+  ],
+  "keywords": [
+    "CloudHarvest",
+    "CLI",
+    "Docker",
+    "Automation"
+  ],
+  "license": "CC Attribution-NonCommercial-ShareAlike 4.0 International",
+  "name": "CloudHarvestStack",
+  "url": "https://github.com/Cloud-Harvest/CloudHarvestStack",
+  "version": "0.1.0"
+}

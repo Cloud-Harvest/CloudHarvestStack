@@ -1,0 +1,89 @@
+#!/bin/bash
+
+########################################################################################################################
+# This script is a wrapper around the docker compose command. It is used to set the default configurations for the
+# Harvest stack. The script will copy the default configurations from the defaults/ directory into the app/ directory
+# if the files do not already exist. The script will then prompt the user to enter the desired tag for each of the
+# Harvest stack objects: Agent, Api, and Cli(ent). The script will then execute the docker compose command with the
+# provided arguments.
+########################################################################################################################
+
+# Make the app directory if it doesn't already exist
+mkdir -pv ./app
+
+# Copy the default configurations from the defaults/ directory into app/ if the files do not exists
+cp -vr --update ./defaults/* ./app/
+
+# Make sure the ./app/stack.rc file exists
+touch ./app/stack.rc
+
+# Source the stack.rc file to get the current values
+source ./app/stack.rc
+
+# Get the desired tags to each stack object: Agent, Api, and Cli(ent)
+# Array of services
+services=("AGENT" "API" "CLI")
+
+# Loop through each service to get the desired tag
+for service in "${services[@]}"; do
+  current_value=$(printenv HARVEST_"${service}"_IMAGE_TAG)
+  read -r -p "Enter the desired tag for HARVEST_${service}_IMAGE_TAG (current: ${current_value:-latest}, default: latest): " tag
+  tag=${tag:-${current_value:-latest}}
+  export HARVEST_"${service}"_IMAGE_TAG="$tag"
+
+  # Check if the entry already exists in stack.rc
+  if grep -q "HARVEST_${service}_IMAGE_TAG=" ./app/stack.rc; then
+    # Update the existing entry
+    sed -i "s|^export HARVEST_${service}_IMAGE_TAG=.*|export HARVEST_${service}_IMAGE_TAG=$tag|" ./app/stack.rc
+  else
+    # Add a new entry
+    echo "export HARVEST_${service}_IMAGE_TAG=$tag" >> ./app/stack.rc
+  fi
+
+done
+
+# Record the UID and the GID of the current user and export them to the ./app/stack.rc file
+gu_ids=("UID" "GID")
+
+for i in "${gu_ids[@]}"; do
+  if [ "$i" == "UID" ]; then
+    value=$(id -u)
+  else
+    value=$(id -g)
+  fi
+
+  export HARVEST_"${i}"="$value"
+
+  # Check if the entry already exists in stack.rc
+  if grep -q "HARVEST_${i}=" ./app/stack.rc; then
+    # Update the existing entry
+    sed -i "s|^export HARVEST_${i}=.*|export HARVEST_${i}=$value|" ./app/stack.rc
+  else
+    # Add a new entry
+    echo "export HARVEST_${i}=$value" >> ./app/stack.rc
+  fi
+done
+
+echo "This configuration can be found in ./app/stack.rc"
+
+# Capture the first argument passed by the user
+first_arg="$1"
+
+# Shift the arguments to remove the first one
+shift
+
+# Check if the first argument is 'up'
+if [ "$first_arg" == "up" ]; then
+  # Run 'docker compose up -d' followed by the rest of the arguments
+  docker compose up -d "$@"
+
+  # Display the previous output for the user
+  docker logs cloudharveststack-harvest-cli-1
+
+  # Attach the user to the container
+  docker attach cloudharveststack-harvest-cli-1
+
+else
+  # Run the command as it is currently presented
+  docker compose "$first_arg" "$@"
+fi

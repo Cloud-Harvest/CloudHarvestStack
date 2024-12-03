@@ -1,0 +1,13 @@
+{
+    "api": {
+        "host": "harvest-api",
+        "port": 8500,
+        "protocol": "http"
+    },
+    "logging": {
+        "level": "warn",
+        "location": "./app/logs/"
+    },
+    "plugins": {},
+    "theme": "default"
+}
