@@ -1,0 +1,24 @@
+services:
+  harvest-cli:
+    image: "fionajuneleathers/cloud-harvest-cli:${HARVEST_CLI_IMAGE_TAG:-latest}"   # The Docker image to use for this service
+    stop_signal: SIGINT             # Specifies the system call signal to be sent to the container to exit
+    volumes:                        # Specifies the paths that should be mounted into the container
+      - "~/:/root/host"
+      - "~/.ssh:/root/.ssh"
+      - "./app/cli/:/src/app/"
+    working_dir: /src               # The working directory inside the container
+    networks:                       # Specifies the networks the container should connect to
+      - CloudHarvestStackNetwork
+    environment:                    # Add environment variables
+      HTTPS_PROXY: "${HTTPS_PROXY}"
+      NO_PROXY: "${NO_PROXY}"
+      GID: "$HARVEST_GID"
+      UID: "$HARVEST_UID"
+    stdin_open: true                # Keep stdin open to support interactive terminal
+    tty: true                       # Allocate a pseudo-TTY
+    restart: no                     # Do not restart the container
+
+networks:                               # Defines the networks to be used by the services
+  CloudHarvestStackNetwork:             # The name of the network
+    name: cloudharveststack_CloudHarvestStackNetwork       # The name of the network
+    external: true                      # Specifies that the network is external to the stack

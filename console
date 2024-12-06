@@ -33,7 +33,7 @@ case "$1" in
     # Scale up the number of cli instances by one
     current_count=$(docker ps --filter "name=cloudharveststack-harvest-cli-" --format "{{.Names}}" | wc -l)
     new_count=$((current_count + 1))
-    docker compose up --scale harvest-cli=$new_count -d
+    docker compose --file docker-compose.cli.yaml up --scale harvest-cli=$new_count -d
 
     # Get the latest container name
     latest_container=$(get_latest_container_name)
@@ -46,7 +46,7 @@ case "$1" in
     ;;
   --prune)
     # Scale down the number of cli instances to 0
-    docker compose up --scale harvest-cli=0 -d
+    docker compose --file docker-compose.cli.yaml up --scale harvest-cli=0 -d
     echo "All 'cloudharveststack-harvest-cli-' containers have been stopped."
     ;;
   --use)
@@ -75,7 +75,7 @@ case "$1" in
     # Check if any cli containers are running
     if [ "$(docker ps --filter "name=cloudharveststack-harvest-cli-" --format "{{.Names}}" | wc -l)" -eq 0 ]; then
       # Scale up the number of cli instances by one
-      docker compose up --scale harvest-cli=1 -d
+      docker compose --file docker-compose.cli.yaml up --scale harvest-cli=1 -d
 
       # Get the latest container name
       latest_container=$(get_latest_container_name)
