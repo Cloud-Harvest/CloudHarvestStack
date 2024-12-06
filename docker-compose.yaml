@@ -1,8 +1,6 @@
 services:
   harvest-agent:                    # Agent: Collects data and performs asynchronous tasks.
     image: "fionajuneleathers/cloud-harvest-agent:${HARVEST_AGENT_IMAGE_TAG:-latest}"   # The Docker image to use for this service
-    ports:                          # Maps the port inside the Docker container to the host
-      - "8500:8500"
     stop_signal: SIGINT             # Specifies the system call signal to be sent to the container to exit
     volumes:                        # Specifies the paths that should be mounted into the container
       - "~/.ssh:/root/.ssh"
@@ -58,7 +56,7 @@ services:
     container_name: core-tasks-mongo  # The name of the container
     restart: always                   # Specifies the restart policy
     ports:                            # Maps the port inside the Docker container to the host
-      - "44444:27017"
+      - "27017:27017"
     command: >                        # The command to run inside the container 
       /bin/bash -c "
         docker-entrypoint.sh --bind_ip_all --logappend
@@ -96,7 +94,7 @@ services:
     container_name: core-tasks-redis
     restart: always
     ports:
-      - "44445:6379"
+      - "6379:6379"
     networks:
       - CloudHarvestStackNetwork
     environment:
