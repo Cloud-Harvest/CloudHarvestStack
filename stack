@@ -6,6 +6,9 @@
 # if the files do not already exist. The script will then prompt the user to enter the desired tag for each of the
 # Harvest stack objects: Agent, Api, and Cli(ent). The script will then execute the docker compose command with the
 # provided arguments.
+#
+# Although this script will create a CLI container and start it, this script will not attach the terminal to the CLI.
+# To attach the terminal to the CLI, use the provided `console` script.
 ########################################################################################################################
 
 # Make the app directory if it doesn't already exist
@@ -76,12 +79,6 @@ shift
 if [ "$first_arg" == "up" ]; then
   # Run 'docker compose up -d' followed by the rest of the arguments
   docker compose up -d "$@"
-
-  # Display the previous output for the user
-  docker logs cloudharveststack-harvest-cli-1
-
-  # Attach the user to the container
-  docker attach cloudharveststack-harvest-cli-1
 
 else
   # Run the command as it is currently presented
