@@ -30,7 +30,7 @@ services:
 
   mongo:                              # Mongo database for persisting data
     image: mongo                      # The Docker image to use for this service
-    container_name: core-tasks-mongo  # The name of the container
+    container_name: cloudharveststack-mongo  # The name of the container
     restart: always                   # Specifies the restart policy
     ports:                            # Maps the port inside the Docker container to the host
       - "27017:27017"
@@ -68,7 +68,7 @@ services:
 
   redis:
     image: redis:latest
-    container_name: core-tasks-redis
+    container_name: cloudharveststack-redis
     restart: always
     ports:
       - "6379:6379"
