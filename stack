@@ -69,18 +69,4 @@ done
 
 echo "This configuration can be found in ./app/stack.rc"
 
-# Capture the first argument passed by the user
-first_arg="$1"
-
-# Shift the arguments to remove the first one
-shift
-
-# Check if the first argument is 'up'
-if [ "$first_arg" == "up" ]; then
-  # Run 'docker compose up -d' followed by the rest of the arguments
-  docker compose up -d "$@"
-
-else
-  # Run the command as it is currently presented
-  docker compose "$first_arg" "$@"
-fi
+docker compose "$@"

@@ -54,17 +54,17 @@ services:
     depends_on:                       # The services that this service depends on
       - mongo
     volumes:                          # Paths that should be mounted into the container
-      - ./data:/mongo-seed
+      - ./app/mongo-seed:/app
     networks:                         # Specifies the networks the container should connect to
       - CloudHarvestStackNetwork
     command: >
       /bin/bash -c '
       sleep 10
-      && mongosh core-tasks-mongo/harvest
+      && mongosh cloudharveststack-mongo/harvest
       --username ${MONGO_INITDB_ROOT_USERNAME:-admin}
       --password ${MONGO_INITDB_ROOT_PASSWORD:-default-harvest-password}
       --authenticationDatabase admin
-      ./mongo-seed.js'
+      /app/mongo-seed.js'
 
   redis:
     image: redis:latest
