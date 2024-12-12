@@ -11,6 +11,10 @@
 # To attach the terminal to the CLI, use the provided `console` script.
 ########################################################################################################################
 
+#########################################################
+# Set the default configurations
+#########################################################
+
 # Make the app directory if it doesn't already exist
 mkdir -pv ./app
 
@@ -22,6 +26,10 @@ touch ./app/stack.rc
 
 # Source the stack.rc file to get the current values
 source ./app/stack.rc
+
+#########################################################
+# Get the desired tag for each Harvest service
+#########################################################
 
 # Get the desired tags to each stack object: Agent, Api, and Cli(ent)
 # Array of services
@@ -44,6 +52,10 @@ for service in "${services[@]}"; do
   fi
 
 done
+
+#########################################################
+# Configure the UID and GID for the current user
+#########################################################
 
 # Record the UID and the GID of the current user and export them to the ./app/stack.rc file
 gu_ids=("UID" "GID")
@@ -68,5 +80,39 @@ for i in "${gu_ids[@]}"; do
 done
 
 echo "This configuration can be found in ./app/stack.rc"
+
+#########################################################
+# Self-signed certificate generation
+#########################################################
+
+# Create a directory to store the certificate and key
+cert_dir="./app/.certs"
+
+mkdir -pv $cert_dir
+
+# Check if the certificate and key files already exist
+if [ ! -f "$cert_dir/harvest-self-signed.key" ] && [ ! -f "$cert_dir/harvest-self-signed.crt" ]; then
+  # Generate a self-signed certificate
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "$cert_dir/harvest-self-signed.key" \
+    -out "$cert_dir/harvest-self-signed.crt" \
+    -subj "/CN=cloudharveststack.local"
+
+else
+  echo "Certificate and key already exist. Skipping generation."
+
+fi
+
+# Copy the configuration file to the agent and api directories in the app directory
+app_components=("agent" "api" "cli")
+for component in "${app_components[@]}"; do
+  cp -rv $cert_dir "./app/$component/certs"
+done
+
+echo "Certificates generated and copied to app directories."
+
+#########################################################
+# Execute the docker compose command
+#########################################################
 
 docker compose "$@"

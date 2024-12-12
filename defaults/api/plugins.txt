@@ -1,1 +1,0 @@
-git+https://github.com/Cloud-Harvest/CloudHarvestPluginAws.git@main
