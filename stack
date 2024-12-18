@@ -87,15 +87,16 @@ echo "This configuration can be found in ./app/stack.rc"
 
 # Create a directory to store the certificate and key
 cert_dir="./app/.certs"
+pem_name="harvest-self-signed.pem"
 
 mkdir -pv $cert_dir
 
 # Check if the certificate and key files already exist
-if [ ! -f "$cert_dir/harvest-self-signed.key" ] && [ ! -f "$cert_dir/harvest-self-signed.crt" ]; then
-  # Generate a self-signed certificate
+if [ ! -f "$cert_dir/$pem_name" ]; then
+  # Generate a self-signed certificate and key in a single PEM file
   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout "$cert_dir/harvest-self-signed.key" \
-    -out "$cert_dir/harvest-self-signed.crt" \
+    -keyout "$cert_dir/$pem_name" \
+    -out "$cert_dir/$pem_name" \
     -subj "/CN=cloudharveststack.local"
 
 else
@@ -106,7 +107,7 @@ fi
 # Copy the configuration file to the agent and api directories in the app directory
 app_components=("agent" "api" "cli")
 for component in "${app_components[@]}"; do
-  cp -rv $cert_dir "./app/$component/certs"
+  cp -v "$cert_dir"/* "./app/$component/"
 done
 
 echo "Certificates generated and copied to app directories."
