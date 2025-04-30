@@ -40,6 +40,9 @@ agent:
       - 1   # Client
       - 2   # Scheduled
 
+    # Starts the JobQueue immediately upon agent start.
+    auto_start: true
+
     # Frequency in seconds at which the agent reports progress on running TaskChains.
     chain_progress_reporting_interval_seconds: 6
 
@@ -85,3 +88,25 @@ api:
 
   # API token for authentication
   # token: api-token-here
+
+########################################################################################################################
+# Platform Configuration
+# Tells the Agent which platforms and accounts which are available to it. The agent will only run TaskChains that are
+# compatible with the designated platforms and accounts.
+########################################################################################################################
+platforms:
+  aws:              # The platform name.
+    accounts:       # The list of AWS accounts that this agent can access.
+      - 123456789
+      - 987654321
+      - 111111111
+      - 222222222
+    role_name: harvest   # The role to assume when running tasks on this platform. This is applied to the role ARN when
+                         # assuming the role. The role must be defined in the AWS account, such as: arn:aws:iam::123456789:role/harvest
+
+########################################################################################################################
+# Plugin Configuration
+########################################################################################################################
+#plugins:
+#  - branch: "0.3.0"
+#    url_or_package_name: "https://github.com/Cloud-Harvest/CloudHarvestPluginAws.git"
