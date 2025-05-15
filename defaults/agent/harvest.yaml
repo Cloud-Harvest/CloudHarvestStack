@@ -4,16 +4,6 @@
 # Agent Configuration
 ########################################################################################################################
 agent:
-  connection:
-    # Hostname or IP address the agent should bind to
-    host: 127.0.0.1
-
-    # Port the agent should bind to
-    port: 8500
-
-    # SSL configuration for the agent
-    pem: ./app/harvest-self-signed.pem
-
   # Manages log files and logging levels.
   logging:
     # Location where logs should be stored
@@ -24,11 +14,6 @@ agent:
 
     # Suppress console output from the logging engine.
     # quiet: true
-
-  # Agent metrics reporting
-  metrics:
-    # The interval in seconds at which the agent will report metrics to the API.
-    reporting_interval_seconds: 1
 
   # TaskChains and Queue Management
   tasks:
@@ -42,9 +27,6 @@ agent:
 
     # Starts the JobQueue immediately upon agent start.
     auto_start: true
-
-    # Frequency in seconds at which the agent reports progress on running TaskChains.
-    chain_progress_reporting_interval_seconds: 6
 
     # Prevent certain TaskChains from running on this agent by specifying the Chain's registered task name. By default,
     # all Tasks and TaskChains are allowed to run on an agent. Selective agent configuration is useful in larger
@@ -62,7 +44,7 @@ agent:
     # sequential iteration over each key to retrieve metadata (`list_keys` followed by sequential `describe_key` calls).
     chain_timeout_seconds: 7200
 
-    # How often the agent checks for new TaskChains in the queue when it has slots available.
+    # How often the agent checks for new TaskChains and report statistics to Redis.
     queue_check_interval_seconds: 1
 
     # Maximum number of TaskChains within the job queue. If the queue is full, the agent will not retrieve new TaskChains
@@ -96,17 +78,19 @@ api:
 ########################################################################################################################
 platforms:
   aws:              # The platform name.
-    accounts:       # The list of AWS accounts that this agent can access.
-      - 123456789
-      - 987654321
-      - 111111111
-      - 222222222
-    role_name: harvest   # The role to assume when running tasks on this platform. This is applied to the role ARN when
-                         # assuming the role. The role must be defined in the AWS account, such as: arn:aws:iam::123456789:role/harvest
+    accounts:       # The list of AWS accounts that this agent can access with the account identifier as the key and other configurations defined as key/value pairs.
+      123456789:
+        role: harvest-readonly
+      987654321:
+        role: harvest-readwrite
+      111111111:
+        role: harvest-readonly
+    default_role: harvest     # The default role name to assume when running tasks on this platform. Used when 'role' is
+                              # not defined for a specific account.
 
 ########################################################################################################################
 # Plugin Configuration
 ########################################################################################################################
 #plugins:
-#  - branch: "0.3.0"
+#  - branch: "0.4.0"
 #    url_or_package_name: "https://github.com/Cloud-Harvest/CloudHarvestPluginAws.git"
