@@ -11,15 +11,18 @@
 # To attach the terminal to the CLI, use the provided `console` script.
 ########################################################################################################################
 
+# Detect OS
+OS=$(uname)
+
 #########################################################
 # Set the default configurations
 #########################################################
 
 # Make the app directory if it doesn't already exist
-mkdir -pv ./app
+mkdir -p ./app || { echo "Failed to create ./app directory"; exit 1; }
 
 # Copy the default configurations from the defaults/ directory into app/ if the files do not exists
-cp -vr --update ./defaults/* ./app/
+rsync -a --ignore-existing ./defaults/ ./app/
 
 # Make sure the ./app/stack.rc file exists
 touch ./app/stack.rc
@@ -30,6 +33,12 @@ source ./app/stack.rc
 #########################################################
 # Get the desired tag for each Harvest service
 #########################################################
+
+if [ "$OS" = "Darwin" ]; then
+  SED_CMD="$SED_CMD ''"
+else
+  SED_CMD="$SED_CMD"
+fi
 
 # Get the desired tags to each stack object: Agent, Api, and Cli(ent)
 # Array of services
@@ -45,7 +54,7 @@ for service in "${services[@]}"; do
   # Check if the entry already exists in stack.rc
   if grep -q "HARVEST_${service}_IMAGE_TAG=" ./app/stack.rc; then
     # Update the existing entry
-    sed -i "s|^export HARVEST_${service}_IMAGE_TAG=.*|export HARVEST_${service}_IMAGE_TAG=$tag|" ./app/stack.rc
+    $SED_CMD "s|^export HARVEST_${service}_IMAGE_TAG=.*|export HARVEST_${service}_IMAGE_TAG=$tag|" ./app/stack.rc
   else
     # Add a new entry
     echo "export HARVEST_${service}_IMAGE_TAG=$tag" >> ./app/stack.rc
@@ -72,7 +81,7 @@ for i in "${gu_ids[@]}"; do
   # Check if the entry already exists in stack.rc
   if grep -q "HARVEST_${i}=" ./app/stack.rc; then
     # Update the existing entry
-    sed -i "s|^export HARVEST_${i}=.*|export HARVEST_${i}=$value|" ./app/stack.rc
+    $SED_CMD "s|^export HARVEST_${i}=.*|export HARVEST_${i}=$value|" ./app/stack.rc
   else
     # Add a new entry
     echo "export HARVEST_${i}=$value" >> ./app/stack.rc
