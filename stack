@@ -34,10 +34,11 @@ source ./app/stack.rc
 # Get the desired tag for each Harvest service
 #########################################################
 
+# OS-agnostic sed (handling `-i` flag differences)
 if [ "$OS" = "Darwin" ]; then
-  SED_CMD="$SED_CMD ''"
+  SED_CMD="sed -i ''"
 else
-  SED_CMD="$SED_CMD"
+  SED_CMD="sed -i"
 fi
 
 # Get the desired tags to each stack object: Agent, Api, and Cli(ent)
