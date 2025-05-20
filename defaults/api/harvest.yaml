@@ -15,7 +15,7 @@
   authSource: harvest                     # The authSource must be provided unless the authSource is the 'admin' database
   database: harvest
   engine: mongo
-  host: harvest-mongo
+  host: cloudharveststack-mongo
   password: default-harvest-password
   port: 27017
   username: harvest-api
@@ -23,7 +23,7 @@
 .default_redis_database: &default_redis_database
   database: 0
   engine: redis
-  host: harvest-redis
+  host: cloudharveststack-redis
   password: default-harvest-password
   port: 6379
 
