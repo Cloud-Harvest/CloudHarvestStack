@@ -31,16 +31,6 @@
 # API Configuration
 ########################################################################################################################
 api:
-  connection:
-    # Hostname or IP address the api should bind to
-    host: 127.0.0.1
-
-    # Port the api should bind to
-    port: 8000
-
-    # SSL configuration for the api
-    pem: ./app/harvest-self-signed.pem
-
   heartbeat:
     # The interval in seconds at which the node will report its status to the harvest-nodes silo.
     check_rate: 1
@@ -107,25 +97,15 @@ silos:
     <<: *default_redis_database
     database: 0
 
-  harvest-task-queue:
-    # Stores TaskChains that are waiting to be processed.
-    <<: *default_redis_database
-    database: 1
-
-  harvest-task-results:
-    # Stores the results of TaskChains that have been processed and awaiting retrieval by an API.
-    <<: *default_redis_database
-    database: 2
-
   harvest-tasks:
     # Stores the progress reports of ongoing and recently completed TaskChains.
     <<: *default_redis_database
-    database: 3
+    database: 1
 
   harvest-tokens:
     # Stores ephemeral tokens for API authentication.
     <<: *default_redis_database
-    database: 4
+    database: 2
 
   harvest-users:
     # Stores user information for authentication and authorization.
