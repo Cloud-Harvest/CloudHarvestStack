@@ -152,4 +152,4 @@ echo "Certificates generated and copied to app directories."
 # Execute the docker compose command
 #########################################################
 
-docker compose "$@"
+docker compose $DOCKER_ARGS
