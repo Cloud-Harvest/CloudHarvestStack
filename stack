@@ -14,6 +14,31 @@
 # Detect OS
 OS=$(uname)
 
+# Default flag values
+KEEP_TAGS=false
+
+# Parse script arguments
+for arg in "$@"; do
+  case $arg in
+    --keep-tags)
+      KEEP_TAGS=true
+      shift
+      ;;
+    --help)
+      echo "Usage: $0 [options]"
+      echo ""
+      echo "Options:"
+      echo "  --keep-tags   Skips prompting for tags if ./app/stack.rc already exists."
+      echo "  --help        Displays this help message."
+      exit 0
+      ;;
+    *)
+      # Pass other arguments to docker compose
+      DOCKER_ARGS+=("$arg")
+      ;;
+  esac
+done
+
 #########################################################
 # Set the default configurations
 #########################################################
@@ -41,27 +66,28 @@ else
   SED_CMD="sed -i"
 fi
 
-# Get the desired tags to each stack object: Agent, Api, and Cli(ent)
-# Array of services
-services=("AGENT" "API" "CLI")
+# Skip tag prompts if --keep-tags is set and stack.rc exists
+if [ "$KEEP_TAGS" = false ] || [ ! -f ./app/stack.rc ]; then
+  # Array of services
+  services=("AGENT" "API" "CLI")
 
-# Loop through each service to get the desired tag
-for service in "${services[@]}"; do
-  current_value=$(printenv HARVEST_"${service}"_IMAGE_TAG)
-  read -r -p "Enter the desired tag for HARVEST_${service}_IMAGE_TAG (current: ${current_value:-latest}, default: latest): " tag
-  tag=${tag:-${current_value:-latest}}
-  export HARVEST_"${service}"_IMAGE_TAG="$tag"
+  # Loop through each service to get the desired tag
+  for service in "${services[@]}"; do
+    current_value=$(printenv HARVEST_"${service}"_IMAGE_TAG)
+    read -r -p "Enter the desired tag for HARVEST_${service}_IMAGE_TAG (current: ${current_value:-latest}, default: latest): " tag
+    tag=${tag:-${current_value:-latest}}
+    export HARVEST_"${service}"_IMAGE_TAG="$tag"
 
-  # Check if the entry already exists in stack.rc
-  if grep -q "HARVEST_${service}_IMAGE_TAG=" ./app/stack.rc; then
-    # Update the existing entry
-    $SED_CMD "s|^export HARVEST_${service}_IMAGE_TAG=.*|export HARVEST_${service}_IMAGE_TAG=$tag|" ./app/stack.rc
-  else
-    # Add a new entry
-    echo "export HARVEST_${service}_IMAGE_TAG=$tag" >> ./app/stack.rc
-  fi
-
-done
+    # Check if the entry already exists in stack.rc
+    if grep -q "HARVEST_${service}_IMAGE_TAG=" ./app/stack.rc; then
+      # Update the existing entry
+      $SED_CMD "s|^export HARVEST_${service}_IMAGE_TAG=.*|export HARVEST_${service}_IMAGE_TAG=$tag|" ./app/stack.rc
+    else
+      # Add a new entry
+      echo "export HARVEST_${service}_IMAGE_TAG=$tag" >> ./app/stack.rc
+    fi
+  done
+fi
 
 #########################################################
 # Configure the UID and GID for the current user
