@@ -98,7 +98,7 @@ silos:
   harvest-tasks:
     # Stores the progress reports of ongoing and recently completed TaskChains.
     <<: *default_redis_database
-    host: cloudharveststack-redis-tasks
+    host: cloudharveststack-haproxy-tasks
 
   harvest-tokens:
     # Stores ephemeral tokens for API authentication.
