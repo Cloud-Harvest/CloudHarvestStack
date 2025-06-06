@@ -16,6 +16,7 @@ OS=$(uname)
 
 # Default flag values
 KEEP_TAGS=false
+REDIS_PASSWORD=${REDIS_PASSWORD:-"default-harvest-password"}
 TASK_NODES=${TASK_NODES:-6}
 
 # Parse script arguments
@@ -153,16 +154,16 @@ echo "Certificates generated and copied to app directories."
 # Generate the configuration for the Redis task nodes
 #########################################################
 
+# Replace the tcp-check 'send AUTH' command with the appropriate password
+$SED_CMD "s|^    tcp-check send AUTH .*|    tcp-check send AUTH \"$REDIS_PASSWORD\"|" ./app/redis-tasks/haproxy.cfg
+
 # First remove any existing redis server lines in the configuration file while preserving the rest of the file
-$SED_CMD '/^    server redis/d' ./app/redis-tasks/haproxy.cfg
+$SED_CMD '/^    server redis.*/d' ./app/redis-tasks/haproxy.cfg
 
 # Write the HA Proxy configuration
 for i in $(seq 1 $TASK_NODES); do
   echo "    server redis${i} cloudharveststack-redis-tasks-node-${i}:6379 check inter 2000ms" >> ./app/redis-tasks/haproxy.cfg
 done
-
-# Set the password for the Redis task nodes
-REDIS_PASSWORD=${REDIS_PASSWORD:-"default-harvest-password"}
 
 $SED_CMD "s|^requirepass.*|requirepass \"$REDIS_PASSWORD\"|" ./app/redis-tasks/redis.conf
 $SED_CMD "s|^masterauth.*|masterauth \"$REDIS_PASSWORD\"|" ./app/redis-tasks/redis.conf
