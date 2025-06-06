@@ -172,22 +172,4 @@ $SED_CMD "s|^masterauth.*|masterauth \"$REDIS_PASSWORD\"|" ./app/redis-tasks/red
 # Execute the docker compose command
 #########################################################
 
-# Construct new docker arguments to avoid modifying the list during iteration
-NEW_DOCKER_ARGS=()
-
-for i in "${!DOCKER_ARGS[@]}"; do
-  if [[ "${DOCKER_ARGS[$i]}" == *"redis-tasks-node"* ]]; then
-    # Add the scale configuration to the new list
-    NEW_DOCKER_ARGS+=("redis-tasks-node")
-    NEW_DOCKER_ARGS+=("--scale")
-    NEW_DOCKER_ARGS+=("redis-tasks-node=$TASK_NODES")
-  else
-    # Add the original argument to the new list
-    NEW_DOCKER_ARGS+=("${DOCKER_ARGS[$i]}")
-  fi
-done
-
-# Replace the original docker arguments with the new list
-DOCKER_ARGS=("${NEW_DOCKER_ARGS[@]}")
-
 docker compose "${DOCKER_ARGS[@]}"

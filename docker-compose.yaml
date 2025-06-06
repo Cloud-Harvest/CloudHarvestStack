@@ -111,6 +111,8 @@ services:
   redis-tasks-node:
     image: redis:latest
     restart: always
+    deploy:
+      replicas: ${TASK_NODES:-6}  # Number of task nodes to run
     networks:
       - CloudHarvestTaskNodeNetwork
     volumes:
