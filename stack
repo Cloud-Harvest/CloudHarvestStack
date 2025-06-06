@@ -16,6 +16,7 @@ OS=$(uname)
 
 # Default flag values
 KEEP_TAGS=false
+TASK_NODES=${TASK_NODES:-6}
 
 # Parse script arguments
 for arg in "$@"; do
@@ -141,7 +142,7 @@ else
 fi
 
 # Copy the configuration file to the agent and api directories in the app directory
-app_components=("agent" "api" "cli")
+app_components=("agent" "api" "cli", "redis-tasks")
 for component in "${app_components[@]}"; do
   cp -v "$cert_dir"/* "./app/$component/"
 done
@@ -149,7 +150,43 @@ done
 echo "Certificates generated and copied to app directories."
 
 #########################################################
+# Generate the configuration for the Redis task nodes
+#########################################################
+
+# First remove any existing redis server lines in the configuration file while preserving the rest of the file
+$SED_CMD '/^    server redis/d' ./app/redis-tasks/haproxy.cfg
+
+# Write the HA Proxy configuration
+for i in $(seq 1 $TASK_NODES); do
+  echo "    server redis${i} cloudharveststack-redis-tasks-node-${i}:6379 check inter 2000ms" >> ./app/redis-tasks/haproxy.cfg
+done
+
+# Set the password for the Redis task nodes
+REDIS_PASSWORD=${REDIS_PASSWORD:-"default-harvest-password"}
+
+$SED_CMD "s|^requirepass.*|requirepass \"$REDIS_PASSWORD\"|" ./app/redis-tasks/redis.conf
+$SED_CMD "s|^masterauth.*|masterauth \"$REDIS_PASSWORD\"|" ./app/redis-tasks/redis.conf
+
+#########################################################
 # Execute the docker compose command
 #########################################################
+
+# Construct new docker arguments to avoid modifying the list during iteration
+NEW_DOCKER_ARGS=()
+
+for i in "${!DOCKER_ARGS[@]}"; do
+  if [[ "${DOCKER_ARGS[$i]}" == *"redis-tasks-node"* ]]; then
+    # Add the scale configuration to the new list
+    NEW_DOCKER_ARGS+=("redis-tasks-node")
+    NEW_DOCKER_ARGS+=("--scale")
+    NEW_DOCKER_ARGS+=("redis-tasks-node=$TASK_NODES")
+  else
+    # Add the original argument to the new list
+    NEW_DOCKER_ARGS+=("${DOCKER_ARGS[$i]}")
+  fi
+done
+
+# Replace the original docker arguments with the new list
+DOCKER_ARGS=("${NEW_DOCKER_ARGS[@]}")
 
 docker compose "${DOCKER_ARGS[@]}"

@@ -23,7 +23,6 @@
 .default_redis_database: &default_redis_database
   database: 0
   engine: redis
-  host: cloudharveststack-redis
   password: default-harvest-password
   port: 6379
 
@@ -94,16 +93,18 @@ silos:
     # Stores information about Agent and API nodes.
     <<: *default_redis_database
     port: 6380
+    host: cloudharveststack-redis-nodes
 
   harvest-tasks:
     # Stores the progress reports of ongoing and recently completed TaskChains.
     <<: *default_redis_database
-    port: 6381
+    host: cloudharveststack-redis-tasks
 
   harvest-tokens:
     # Stores ephemeral tokens for API authentication.
     <<: *default_redis_database
     port: 6382
+    host: cloudharveststack-redis-tokens
 
   harvest-users:
     # Stores user information for authentication and authorization.

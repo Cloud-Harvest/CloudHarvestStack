@@ -1,6 +1,8 @@
 services:
   harvest-agent:                    # Agent: Collects data and performs asynchronous tasks.
     image: "fionajuneleathers/cloud-harvest-agent:${HARVEST_AGENT_IMAGE_TAG:-latest}"   # The Docker image to use for this service
+    depends_on:
+      - harvest-api
     stop_signal: SIGINT             # Specifies the system call signal to be sent to the container to exit
     volumes:                        # Specifies the paths that should be mounted into the container
       - "~/.ssh:/root/.ssh"
@@ -14,6 +16,9 @@ services:
 
   harvest-api:                      # Api: provides interface for retrieving data and directing Agents to perform work.
     image: "fionajuneleathers/cloud-harvest-api:${HARVEST_API_IMAGE_TAG:-latest}"   # The Docker image to use for this service
+    depends_on:
+      - mongo
+      - haproxy-tasks
     ports:                          # Maps the port inside the Docker container to the host
       - "8000:8000"
     stop_signal: SIGINT             # Specifies the system call signal to be sent to the container to exit
@@ -78,9 +83,9 @@ services:
       REDIS_PASSWORD: "${REDIS_PASSWORD:-default-harvest-password}"
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-default-harvest-password}", "--maxmemory", "4gb"]
 
-  harvest-tasks:
+  harvest-tokens:
     image: redis:latest
-    container_name: cloudharveststack-redis-tasks
+    container_name: cloudharveststack-redis-tokens
     restart: always
     ports:
       - "6381:6379"
@@ -90,18 +95,46 @@ services:
       REDIS_PASSWORD: "${REDIS_PASSWORD:-default-harvest-password}"
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-default-harvest-password}", "--maxmemory", "4gb"]
 
-  harvest-tokens:
-    image: redis:latest
-    container_name: cloudharveststack-redis-tokens
-    restart: always
+  haproxy-tasks:
+    image: haproxy:latest
+    depends_on:
+      - redis-tasks-node
+    container_name: cloudharveststack-haproxy-tasks
     ports:
-      - "6382:6379"
+      - "6379:6379"
+    volumes:
+      - ./app/redis-tasks/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     networks:
       - CloudHarvestStackNetwork
+      - CloudHarvestTaskNodeNetwork
+
+  redis-tasks-node:
+    image: redis:latest
+    restart: always
+    networks:
+      - CloudHarvestTaskNodeNetwork
+    volumes:
+      - ./app/redis-tasks/redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--requirepass", "${REDIS_PASSWORD:-default-harvest-password}"]
     environment:
       REDIS_PASSWORD: "${REDIS_PASSWORD:-default-harvest-password}"
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-default-harvest-password}", "--maxmemory", "4gb"]
 
-networks:                               # Defines the networks to be used by the services
-  CloudHarvestStackNetwork:             # The name of the network
-    driver: bridge                      # The network driver to be used
+  redis-tasks-cluster-setup:
+    image: redis:latest
+    depends_on:
+      - redis-tasks-node
+    networks:
+      - CloudHarvestTaskNodeNetwork
+    volumes:
+      - ./app/redis-tasks/:/src/
+    entrypoint: > 
+      /bin/bash -c 'bash /src/add-nodes.sh'
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-default-harvest-password}"
+      TASK_NODES: "${TASK_NODES:-6}"
+
+networks:
+  CloudHarvestStackNetwork:
+    driver: bridge
+  CloudHarvestTaskNodeNetwork:
+    driver: bridge
