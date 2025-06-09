@@ -18,7 +18,7 @@ services:
     image: "fionajuneleathers/cloud-harvest-api:${HARVEST_API_IMAGE_TAG:-latest}"   # The Docker image to use for this service
     depends_on:
       - mongo
-      - haproxy-tasks
+      - haproxy-redis
     ports:                          # Maps the port inside the Docker container to the host
       - "8000:8000"
     stop_signal: SIGINT             # Specifies the system call signal to be sent to the container to exit
@@ -31,7 +31,6 @@ services:
     environment:                     # Add environment variables
       HTTPS_PROXY: "${HTTPS_PROXY}"
       NO_PROXY: "${NO_PROXY}"
-
 
   mongo:                              # Mongo database for persisting data
     image: mongo                      # The Docker image to use for this service
@@ -71,44 +70,20 @@ services:
       --authenticationDatabase admin
       /app/mongo-seed.js'
 
-  harvest-nodes:
-    image: redis:latest
-    container_name: cloudharveststack-redis-nodes
-    restart: always
-    ports:
-      - "6380:6379"
-    networks:
-      - CloudHarvestStackNetwork
-    environment:
-      REDIS_PASSWORD: "${REDIS_PASSWORD:-default-harvest-password}"
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-default-harvest-password}", "--maxmemory", "4gb"]
-
-  harvest-tokens:
-    image: redis:latest
-    container_name: cloudharveststack-redis-tokens
-    restart: always
-    ports:
-      - "6381:6379"
-    networks:
-      - CloudHarvestStackNetwork
-    environment:
-      REDIS_PASSWORD: "${REDIS_PASSWORD:-default-harvest-password}"
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-default-harvest-password}", "--maxmemory", "4gb"]
-
-  haproxy-tasks:
+  haproxy-redis:
     image: haproxy:latest
     depends_on:
-      - redis-tasks-node
-    container_name: cloudharveststack-haproxy-tasks
+      - redis-node
+    container_name: cloudharveststack-haproxy-redis
     ports:
       - "6379:6379"
     volumes:
-      - ./app/redis-tasks/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+      - ./app/redis/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     networks:
       - CloudHarvestStackNetwork
       - CloudHarvestTaskNodeNetwork
 
-  redis-tasks-node:
+  redis-node:
     image: redis:latest
     restart: always
     deploy:
@@ -116,7 +91,7 @@ services:
     networks:
       - CloudHarvestTaskNodeNetwork
     volumes:
-      - ./app/redis-tasks/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./app/redis/redis.conf:/usr/local/etc/redis/redis.conf
     command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--requirepass", "${REDIS_PASSWORD:-default-harvest-password}"]
     environment:
       REDIS_PASSWORD: "${REDIS_PASSWORD:-default-harvest-password}"
@@ -124,11 +99,11 @@ services:
   redis-tasks-cluster-setup:
     image: redis:latest
     depends_on:
-      - redis-tasks-node
+      - redis-node
     networks:
       - CloudHarvestTaskNodeNetwork
     volumes:
-      - ./app/redis-tasks/:/src/
+      - ./app/redis/:/src/
     entrypoint: > 
       /bin/bash -c 'bash /src/add-nodes.sh'
     environment:

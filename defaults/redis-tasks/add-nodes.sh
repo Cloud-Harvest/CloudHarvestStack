@@ -7,9 +7,9 @@ echo "Beginning redis tasks cluster configuration with ${TASK_NODES} task nodes.
 
 # First we need to check if there is an existing redis cluster configuration.
 # If the cluster is already configured, we will purge the configuration and start fresh.
-if redis-cli -h cloudharveststack-redis-tasks-node-1 --pass ${REDIS_PASSWORD} cluster info | grep -q "cluster_state:ok"; then
+if redis-cli -h cloudharveststack-redis-node-1 --pass ${REDIS_PASSWORD} cluster info | grep -q "cluster_state:ok"; then
   echo "WARN: Redis cluster is already configured. Removing the existing configuration.";
-  redis-cli -h cloudharveststack-redis-tasks-node-1 --pass ${REDIS_PASSWORD} cluster reset;
+  redis-cli -h cloudharveststack-redis-node-1 --pass ${REDIS_PASSWORD} cluster reset;
 fi
 
 # Check if the total number of task nodes is an even or odd number.
@@ -20,7 +20,7 @@ fi
 # Build node list
 NODE_LIST=""
 for i in $(seq 1 ${TASK_NODES}); do
-  NODE_LIST="${NODE_LIST} cloudharveststack-redis-tasks-node-${i}:6379"
+  NODE_LIST="${NODE_LIST} cloudharveststack-redis-node-${i}:6379"
 done
 
 # Create cluster in one step
