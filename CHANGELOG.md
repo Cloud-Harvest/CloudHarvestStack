@@ -1,5 +1,5 @@
 # 0.2.0
-- Redis servers broken out into separate functional roles
+- Reworked Redis as a Redis Cluster
 
 # 0.1.0
 - First implementation
