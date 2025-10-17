@@ -3,7 +3,7 @@
 ########################################################################################################################
 api:
   # Endpoint for the CloudHarvestApi
-  host: 127.0.0.1
+  host: cloudharveststack-harvest-api-1
 
   # Port for the Api
   port: 8000

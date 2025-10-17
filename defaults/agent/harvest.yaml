@@ -56,7 +56,7 @@ agent:
 ########################################################################################################################
 api:
   # Endpoint for the CloudHarvestApi
-  host: 127.0.0.1
+  host: cloudharveststack-harvest-api-1
 
   # Port for the Api
   port: 8000
@@ -85,6 +85,8 @@ platforms:
         role: harvest-readwrite
       111111111:
         role: harvest-readonly
+#    credentials_file: /src/app/credentials
+#    credentials_source: file
     default_role: harvest     # The default role name to assume when running tasks on this platform. Used when 'role' is
                               # not defined for a specific account.
 

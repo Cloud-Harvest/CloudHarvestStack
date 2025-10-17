@@ -139,3 +139,4 @@ poetry.lock
 
 # Local app directory
 app
+.idea
