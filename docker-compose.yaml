@@ -76,7 +76,7 @@ services:
       - CloudHarvestStackNetwork
     environment:
       REDIS_PASSWORD: "${REDIS_PASSWORD:-default-harvest-password}"
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-default-harvest-password}", "--maxmemory", "4gb"]
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-default-harvest-password}", "--maxmemory", "4gb", '--loglevel', 'verbose']
 
 networks:                               # Defines the networks to be used by the services
   CloudHarvestStackNetwork:             # The name of the network
