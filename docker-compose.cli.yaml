@@ -1,6 +1,7 @@
 services:
   harvest-cli:
     image: "fionajuneleathers/cloud-harvest-cli:${HARVEST_CLI_IMAGE_TAG:-latest}"   # The Docker image to use for this service
+    pull_policy: always             # Specifies the pull policy for the Docker image (always, never, if-not-present)
     stop_signal: SIGINT             # Specifies the system call signal to be sent to the container to exit
     volumes:                        # Specifies the paths that should be mounted into the container
       - "~/:/root/host"

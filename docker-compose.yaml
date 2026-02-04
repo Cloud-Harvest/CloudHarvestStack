@@ -1,6 +1,7 @@
 services:
   harvest-agent:                    # Agent: Collects data and performs asynchronous tasks.
     image: "fionajuneleathers/cloud-harvest-agent:${HARVEST_AGENT_IMAGE_TAG:-latest}"   # The Docker image to use for this service
+    pull_policy: always             # Specifies the pull policy for the Docker image (always, never, if-not-present)
     stop_signal: SIGINT             # Specifies the system call signal to be sent to the container to exit
     volumes:                        # Specifies the paths that should be mounted into the container
       - "~/.ssh:/root/.ssh"
@@ -14,6 +15,7 @@ services:
 
   harvest-api:                      # Api: provides interface for retrieving data and directing Agents to perform work.
     image: "fionajuneleathers/cloud-harvest-api:${HARVEST_API_IMAGE_TAG:-latest}"   # The Docker image to use for this service
+    pull_policy: always             # Specifies the pull policy for the Docker image (always, never, if-not-present)
     ports:                          # Maps the port inside the Docker container to the host
       - "8000:8000"
     stop_signal: SIGINT             # Specifies the system call signal to be sent to the container to exit
