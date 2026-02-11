@@ -92,8 +92,8 @@ silos:
             Active: true
         - name: metadata_update_idx
           keys:
-            - Silo
-            - Collection
+            - Silo.Name
+            - Silo.Collection
             - AccountId
             - Region
             - UniqueIdentifier
